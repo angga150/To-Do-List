@@ -1,2 +1,2 @@
 # To-Do-List
-latihan project python berbasis web
+latihan project To-do-list berbasis web
