@@ -20,8 +20,8 @@ class Task_model {
     }
 
     public function tambahTask($data) {
-        $query = "INSERT INTO tasks VALUES
-            ('', :title, :description, :priority, '', '')";
+        $query = "INSERT INTO tasks (title, description, priority) VALUES
+            (:title, :description, :priority)";
 
             $this->db->query($query);
             $this->db->bind('title', $data['title']);
