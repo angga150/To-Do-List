@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 30, 2025 at 10:10 PM
+-- Generation Time: Jul 31, 2025 at 07:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -35,16 +35,6 @@ CREATE TABLE `tasks` (
   `status` enum('Pending','Completed') DEFAULT 'Pending',
   `created` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tasks`
---
-
-INSERT INTO `tasks` (`id`, `title`, `description`, `priority`, `status`, `created`) VALUES
-(1, 'bikin web', 'membuat web to-do-list', 'red', 'Pending', '2025-07-30 19:05:00'),
-(2, 'main emel ', 'push sampe imortal', 'blue', '', '0000-00-00 00:00:00'),
-(3, 'bikin project', 'setelah ini bikin project lagi', 'green', '', '0000-00-00 00:00:00'),
-(4, 'sfasfasf', 'safasf', 'blue', 'Pending', '2025-07-30 20:09:01');
 
 --
 -- Indexes for dumped tables
