@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../public/css/output.css">
     <link rel="icon" href="../icon/gear.svg">
 </head>
-<body>
+<body class="bg-[#F5F5F5">
 <div class="bg-[#1A7DCE] w-[300px] h-screen items-center justify-center fixed">
 
             <div class="h-[60px] flex items-center p-4">
@@ -18,8 +18,7 @@
 
                 
             </div>
-                <hr class="h-px border-1 border-white">
-             
+            <hr class="mx-3 h-px bg-white border-0">
             <div class="items-center pl-2 pb-157 pr-4">
                 <div class="relative mt-4">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 ">
@@ -38,7 +37,7 @@
                 <P class="text-left items-center pl-2 font-medium text-white">My list</P>
                 </a>
 
-                <a href="" class="flex items-center p-4 pb-2 pt-2 mt-2 text-white hover:bg-[#0059DF]/40 rounded-lg transition duration-200 ease-in-out hover:transition hover:duration-200 hover:ease-in-out">
+                <a href="" class="flex items-center p-4 pb-2 pt-2 mt-2 text-white hover:bg-[#0059DF]/40 rounded-lg transition duration-200 ease-in-out   hover:transition hover:duration-200 hover:ease-in-out">
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 2048 2048">
                     <path fill="currentColor" d="m1491 595l90 90l-749 749l-365-365l90-90l275 275l659-659zM1024 0q141 0 272 36t245 103t207 160t160 208t103 245t37 272q0 141-36 272t-103 245t-160 207t-208 160t-245 103t-272 37q-141 0-272-36t-245-103t-207-160t-160-208t-103-244t-37-273q0-141 36-272t103-245t160-207t208-160T751 37t273-37zm0 1920q123 0 237-32t214-90t182-141t140-181t91-214t32-238q0-123-32-237t-90-214t-141-182t-181-140t-214-91t-238-32q-123 0-237 32t-214 90t-182 141t-140 181t-91 214t-32 238q0 123 32 237t90 214t141 182t181 140t214 91t238 32z"/></svg>
                 <P class="text-left items-center pl-2 font-medium text-white">Completed</P>
