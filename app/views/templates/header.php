@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman <?= $data['judul']; ?> </title>
+    <title><?= $data['judul']; ?> </title>
     
 
-    <link rel="stylesheet" href="../public/css/output.css">
-    <link rel="icon" href="../icon/gear.svg">
+    <link rel="stylesheet" href="<?=BASEURL;?>css/output.css">
+    <link rel="icon" href="<?=BASEURL;?>icon/gear.svg">
 </head>
 <body class="bg-[#F5F5F5">
 <div class="bg-[#1A7DCE] w-[300px] h-screen items-center justify-center fixed">
 
             <div class="h-[60px] flex items-center p-4">
-                <img src="../public/img/linux.png" alt="" class="rounded-full w-10 h-10 object-cover">
+                <img src="<?=BASEURL;?>img/linux.png" alt="" class="rounded-full w-10 h-10 object-cover">
                 <h1 class="text-left items-center pl-2 font-medium text-white">username</h1>
 
                 
@@ -60,6 +60,3 @@
             </div>
      
 </div>  
-
-
-</body>

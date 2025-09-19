@@ -15,7 +15,7 @@ class Task_model {
 
     public function getTaskById($id){
         $this->db->query('SELECT * FROM ' . $this->table . ' WHERE id = :id' );
-        $this->db->bind('id', $id);
+        
         return $this->db->single();
     }
 

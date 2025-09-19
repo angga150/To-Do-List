@@ -4,30 +4,29 @@
 @import url(../font/PoiretOne-Regular.ttf);
 @import url(../font/Quicksand-VariableFont_wght.ttf);
 
-  @font-face {
-    font-family: 'Lexend Giga';
-    src: url('../public/font/LexendGiga-VariableFont_wght.ttf') format('truetype');
-  }
-
-  @font-face {
-    font-family: 'Montserrat';
-    src: url('../public/font/Montserrat-VariableFont_wght.ttf') format('truetype');
-  }
-
-  @font-face {
-    font-family: 'Quicksand';
-    src: url('../public/font/Quicksand-VariableFont_wght.ttf') format('truetype');
-  }
-  
-  @font-face {
-    font-family: 'Poiret One';
-    src: url('../public/font/PoiretOne-Regular.ttf') format('truetype');
-  }
-  
-@theme {
---font-giga : Lexend Giga;
---font-mons : Montserrat;
---font-sand : Quicksand;
---font-one : Poiret One;
+@font-face {
+  font-family: "Lexend Giga";
+  src: url("../public/font/LexendGiga-VariableFont_wght.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Montserrat";
+  src: url("../public/font/Montserrat-VariableFont_wght.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Quicksand";
+  src: url("../public/font/Quicksand-VariableFont_wght.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Poiret One";
+  src: url("../public/font/PoiretOne-Regular.ttf") format("truetype");
+}
+
+@theme {
+  --font-giga: Lexend Giga;
+  --font-mons: Montserrat;
+  --font-sand: Quicksand;
+  --font-one: Poiret One;
+}
