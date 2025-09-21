@@ -16,15 +16,13 @@
                         </div>
                         <p class="ml-8 text-white"><?= $task['description']; ?></p>
                         <div class="" id="more">
-                            <a href="<?= BASEURL;?>home/ubah/<?= $task['id'];?>">edit</a>
+                            <a href="<?= BASEURL;?>home/edit/<?= $task['id']; ?>">edit</a>
                             <a href="<?= BASEURL;?>home/hapus/<?= $task['id'];?>" onclick="return confirm('yakin?');">hapus</a>
                         </div>
                     </div>
                     <?php endforeach; ?>
             </div>
         </div>
-
-        <form action=""></form>
 
 <!-- form tambah task -->
 <div id="crtform" class="hidden w-full rounded-xl mt-2 border-1 border-gray-400/40 p-2">

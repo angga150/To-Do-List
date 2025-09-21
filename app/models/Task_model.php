@@ -44,4 +44,20 @@ class Task_model {
         return $this->db->rowCount();
     }
 
+    public function updateTask($data) {
+        $query = "UPDATE tasks 
+                  SET title = :title, description = :description, priority = :priority 
+                  WHERE id = :id";
+
+        $this->db->query($query);
+        $this->db->bind('title', $data['title']);
+        $this->db->bind('description', $data['description']);
+        $this->db->bind('priority', $data['priority']);
+        $this->db->bind('id', $data['id']);
+
+        $this->db->execute();
+
+        return $this->db->rowCount();
+    }
+
 }

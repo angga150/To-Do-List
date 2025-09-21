@@ -28,5 +28,25 @@ class Home extends Controller {
             exit;
         }
     }
+
+    public function update() {
+        if ($this->model('Task_model')->updateTask($_POST) > 0) {
+            header('Location: ' . BASEURL . 'home');
+            exit;
+        } else {
+            header('Location: ' . BASEURL . 'home');
+            exit;
+        }
+    }
+
+    public function edit($id){
+    $data['judul'] = 'Edit Task';
+    $data['editTask'] = $this->model('Task_model')->getTaskById($id);
+
+    $this->view('templates/header', $data);
+    $this->view('home/edit', $data);
+    $this->view('templates/footer');
+    }
+
     
 }
