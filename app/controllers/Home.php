@@ -9,7 +9,7 @@ class Home extends Controller {
         $this->view('templates/footer');
     }
 
-     public function tambah() {
+    public function tambah() {
         if( $this->model('Task_model')->tambahTask($_POST) > 0  ) {
             header('Location: ' . BASEURL . 'home');
             exit;
@@ -19,4 +19,14 @@ class Home extends Controller {
         }
     }
 
+    public function hapus($id) {
+        if( $this->model('Task_model')->hapusTask($id) > 0  ) {
+            header('Location: ' . BASEURL . 'home');
+            exit;
+        } else {
+            header('Location: ' . BASEURL . 'home');
+            exit;
+        }
+    }
+    
 }

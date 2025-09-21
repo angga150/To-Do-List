@@ -15,7 +15,7 @@ class Task_model {
 
     public function getTaskById($id){
         $this->db->query('SELECT * FROM ' . $this->table . ' WHERE id = :id' );
-        
+        $this->db->bind('id', $id);
         return $this->db->single();
     }
 
@@ -32,6 +32,16 @@ class Task_model {
 
             return $this->db->rowCount();
 
+    }
+
+    public function hapusTask($id) {
+        $query = "DELETE FROM tasks WHERE id = :id";
+        $this->db->query($query);
+        $this->db->bind('id', $id);
+
+        $this->db->execute();
+
+        return $this->db->rowCount();
     }
 
 }

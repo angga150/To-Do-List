@@ -1,6 +1,6 @@
 <?php   
 
-define('BASEURL','http://localhost/TO-DO-LIST/public/');
+define('BASEURL','http://localhost/To-Do-List/public/');
 
 // DB
 
