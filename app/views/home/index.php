@@ -1,40 +1,69 @@
-<div class="flex">
-    <div class="ml-[300px] w-full h-[100vh]">
-        <div class=" ml-72 mr-72 mt-20">
-            <div class="items-center mb-6">
-                <h1 class="font-bold text-2xl">My Todo List</h1>
-                <h2 class="font-medium"> 0 Task</h2>
-            </div>
 
-            <div class="justify-items-center ">
-                <div class="w-full rounded-xl">
-                    <?php foreach( $data['task'] as $task ) :  ?>
-                    <div class="mb-4 bg-[#1A7DCE] p-2 rounded-xl">
-                        <div class="flex items-center ">
-                            <div class="bg-[<?= $task['priority'];?>] w-6 h-6 rounded-full mr-2"></div>
-                            <h1 class="text-lg font-medium text-white"><?= $task['title']; ?></h1>
-                        </div>
-                        <p class="ml-8 text-white"><?= $task['description']; ?></p>
-                        <div class="" id="more">
-                            <a href="<?= BASEURL;?>home/edit/<?= $task['id']; ?>">edit</a>
-                            <a href="<?= BASEURL;?>home/hapus/<?= $task['id'];?>" onclick="return confirm('yakin?');">hapus</a>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
+
+
+
+
+
+
+
+<div id="main-content" class="min-h-screen themed-text-dark transition-all duration-300">
+        <!-- Tampilan utama Daftar Tugas -->
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        <div class="flex items-center justify-between mb-6 themed-text-dark">
+            <div>
+                <h1 class="font-bold text-2xl" id="main-title" data-i18n="my_todo_list">My Todo List</h1>
+                <h2 class="font-medium text-gray-600"><span id="task-count">0</span> <span data-i18n="tasks">Task</span></h2>
             </div>
         </div>
-
-<!-- form tambah task -->
-<div id="crtform" class="hidden w-full rounded-xl mt-2 border-1 border-gray-400/40 p-2">
+        
+        <!-- Daftar Tugas -->
+    <div id="task-list">
+        <?php foreach( $data['task'] as $task ) :  ?>
+            <div class="task-card p-4 rounded-xl shadow-md mb-4">
+                <div class="flex items-center relative">
+                    <div class="w-6 h-6 rounded-full mr-2 shrink-0" style="background-color: <?= $task['priority'];?>;"></div>
+                    <div class="flex w-full pr-4 items-center">
+                        <h1 class="text-lg font-medium w-full"><?= $task['title']; ?></h1>
+                        <div class="more-btn-container relative">
+                            <button class="more-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 344 384">
+                                    <path fill="currentColor" d="M42.5 149q17.5 0 30 12.5T85 192t-12.5 30.5t-30 12.5t-30-12.5T0 192t12.5-30.5t30-12.5zm256 0q17.5 0 30 12.5T341 192t-12.5 30.5t-30 12.5t-30-12.5T256 192t12.5-30.5t30-12.5zm-128 0q17.5 0 30 12.5T213 192t-12.5 30.5t-30 12.5t-30-12.5T128 192t12.5-30.5t30-12.5z"></path>
+                                </svg>
+                            </button>
+                            <div class="more-menu absolute right-0 mt-2 w-[170px] bg-sky-300 rounded-lg shadow-lg z-10 ">
+                                <button class="block w-full text-left p-2 hover:bg-sky-400 rounded-lg text-white font-medium edit-task-btn" data-task-id="1" data-i18n="edit">Edit</button>
+                                <button class="block w-full text-left p-2 hover:bg-sky-400 rounded-lg text-white font-medium delete-task-btn" data-task-id="1" data-i18n="delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="ml-8 mt-2"><?= $task['description']; ?></p>
+                <div class="flex items-center justify-between ml-8 mt-2">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="text-white mr-2"><path fill="currentColor" d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5v-5z"></path></svg>
+                        <p class="text-sm">Deadline: 2025-08-10</p>
+                    </div>
+                    <button class="complete-btn px-4 py-2 rounded-full font-bold text-sm transition-colors duration-200" data-task-id="1" style="background-color: var(--bg-primary); color: var(--text-white);">
+                        Mark as Done
+                    </button>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+        
+        <!-- form tambah task -->
+<div id="crtform" class="hidden w-full rounded-xl mt-2 border-1 border-gray-400/40 p-2 ">
     
 <form action="<?=BASEURL;?>home/tambah" method="post">
     <input type="text" name="title" id="title" placeholder="Title" class="w-full h-10 text-xl font-medium pl-4  focus:border-none focus:outline-none">
 
     <input type="text" name="description" id="description" placeholder="Description" class="w-full font-medium border-0 pl-4   focus:border-none focus:outline-none">
  
-    <div class="p-4 flex gap-2">
+    <div class="p-4 flex gap-2 md:justify-between">
+
+    <div class="flex gap-2 flex-wrap">
         <div class="flex gap-2 items-center ">
-        <input type="radio" name="priority" id="priority1" value="red" class="hidden peer">
+        <input type="radio" name="priority" id="priority1" value="red" class="hidden peer" >
             <label for="priority1" class="flex items-center cursor-pointer text-gray-700 hover:text-red-500 transition-colors duration-200 p-2 rounded-lg peer-checked:bg-red-200">
                         <div class=" mr-2 flex items-center justify-center shrink-0
                                     border-[#EF233C] peer-checked:bg-[#EF233C] text-[#EF233C] transition-colors duration-200">
@@ -74,15 +103,23 @@
                     <span class="font-medium text-[#EF942C]">Low</span>
             </label>
         </div>
-    
+        </div>
+            
+                            <div class="flex items-center gap-2 mt-4 md:mt-0">
+                        <label for="deadline" class="flex items-center themed-text-dark font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5v-5z"/></svg>
+                            <span class="ml-2" data-i18n="deadline">Deadline</span>
+                        </label>
+                        <input type="date" name="deadline" id="deadline" class="w-auto font-medium py-2 px-4 border themed-border-color rounded-lg focus:outline-none focus:border-sky-500 themed-text-dark">
+                    </div>
     
     </div>
    
-    <!-- <div class="w-full flex justify-end p-2"> -->
+    <div class="w-full flex justify-end p-2">
     <button id="cnlbutton" type="button" class="bg-gray-400/50 rounded-lg pt-2 pl-4 pr-4 pb-2 font-medium mr-2 cursor-pointer hover:bg-gray-400 transition duration-200 ease-in-out hover:transition hover:duration-200 hover:ease-in-out">Cancel</button>
-    <button type="submit" id="crtbutton" class="bg-sky-500 rounded-lg pt-2 pl-4 pr-4 pb-2 font-medium text-[#ffffff] cursor-pointer hover:bg-[#1A7DCE] transition duration-200 ease-in-out hover:transition hover:duration-200 hover:ease-in-out">Add task</button>
-    <!-- </div> -->
-    <button type="submit" class="bg-sky-500 rounded-lg pt-2 pl-4 pr-4 pb-2 font-medium text-[#ffffff] cursor-pointer hover:bg-[#1A7DCE] transition duration-200 ease-in-out hover:transition hover:duration-200 hover:ease-in-out">add task (baru)</button>
+    <button type="submit"  class="bg-sky-500 rounded-lg pt-2 pl-4 pr-4 pb-2 font-medium text-[#ffffff] cursor-pointer hover:bg-[#1A7DCE] transition duration-200 ease-in-out hover:transition hover:duration-200 hover:ease-in-out">Add task</button>
+     </div>
+    
 </form>
 
 </div>
@@ -96,10 +133,19 @@
                 </a>
         </div>
 
+    
+
+   
 
 
 
+
+    </div>
+    </div>
+    </div>
 </div>
-</div>
-</div>
+<script>
+
+</script>
+</body>
 

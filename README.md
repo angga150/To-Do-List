@@ -14,3 +14,5 @@ cara menyalin dan configurasi repo ini :
    - lalu klik import
 4. buka xampp dan nyalakan apache dan mysql
 5. buka web browser lalu jalankan url ini : localhost/To-Do-List
+
+npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/output.css --watch

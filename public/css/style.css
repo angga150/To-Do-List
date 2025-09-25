@@ -1,0 +1,167 @@
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Tema Default */
+        .theme-default {
+            --bg-body: #F5F5F5;
+            --bg-sidebar: #1A7DCE;
+            --text-white: #ffffff;
+            --text-dark: #1f2937;
+            --bg-primary: #0059DF;
+            --bg-secondary: #0059DF;
+            --bg-card: #1A7DCE;
+            --border-color: #e5e7eb;
+            --text-priority-high: #EF233C;
+            --text-priority-medium: #0059DF;
+            --text-priority-low: #EF942C;
+            --hover-sidebar: #0059DF;
+            --tab-text: #1f2937;
+            --modal-bg: #ffffff;
+            --modal-tab-active-bg: #e5e7eb;
+            --dropdown-bg: #ffffff;
+            --dropdown-text: #1f2937;
+            --dropdown-hover-bg: #f3f4f6;
+        }
+
+        /* Tema Default */
+        .theme-dark {
+            --bg-body: #1C1C1C;
+            --bg-sidebar: #212121;
+            --text-white: #ffffff;
+            --text-dark: #ffffff;
+            --bg-primary: #008ED5;
+            --bg-secondary: #008ED5;
+            --bg-card: #303030;
+            --border-color: #e5e7eb;
+            --text-priority-high: #EF233C;
+            --text-priority-medium: #0059DF;
+            --text-priority-low: #EF942C;
+            --hover-sidebar: #303030;
+            --tab-text: #ffffff;
+            --modal-bg: #303030;
+            --modal-tab-active-bg: #212121;
+            --dropdown-bg: #ffffff;
+            --dropdown-text: #1f2937;
+            --dropdown-hover-bg: #464646;
+        }
+
+        /* Tema Mewah (Luxury) */
+        .theme-luxury {
+            --bg-body: #0a0a0a;
+            --bg-sidebar: #1c1c1c;
+            --text-white: #e0b462; /* Emas */
+            --text-dark: #f0f0f0;
+            --bg-primary: #e0b462; /* Emas */
+            --bg-secondary: #2a2a2a;
+            --bg-card: #1c1c1c;
+            --border-color: #444444;
+            --text-priority-high: #EF233C;
+            --text-priority-medium: #0059DF;
+            --text-priority-low: #EF942C;
+            --hover-sidebar: #2a2a2a;
+            --tab-text: #f0f0f0;
+            --modal-bg: #1c1c1c;
+            --modal-tab-active-bg: #2a2a2a;
+            --dropdown-bg: #1c1c1c;
+            --dropdown-text: #f0f0f0;
+            --dropdown-hover-bg: #2a2a2a;
+        }
+
+        /* Tema Hitam & Oranye */
+        .theme-orange {
+            --bg-body: #1a1a1a;
+            --bg-sidebar: #262626;
+            --text-white: #ffffff;
+            --text-dark: #f0f0f0;
+            --bg-primary: #ff8c00; /* Oranye gelap */
+            --bg-secondary: #4a4a4a;
+            --bg-card: #262626;
+            --border-color: #4a4a4a;
+            --text-priority-high: #EF233C;
+            --text-priority-medium: #0059DF;
+            --text-priority-low: #EF942C;
+            --hover-sidebar: #4a4a4a;
+            --tab-text: #f0f0f0;
+            --modal-bg: #262626;
+            --modal-tab-active-bg: #4a4a4a;
+            --dropdown-bg: #262626;
+            --dropdown-text: #f0f0f0;
+            --dropdown-hover-bg: #2a2a2a;
+        }
+
+        /* Aturan umum untuk menerapkan tema */
+        .themed-bg-body { background-color: var(--bg-body); }
+        .themed-bg-sidebar { background-color: var(--bg-sidebar); }
+        .themed-text-white { color: var(--text-white); }
+        .themed-text-dark { color: var(--text-dark); }
+        .themed-bg-primary { background-color: var(--bg-primary); }
+        .themed-bg-secondary { background-color: var(--bg-secondary); }
+        .themed-bg-card { background-color: var(--bg-card); }
+        .themed-border-color { border-color: var(--border-color); }
+        .themed-text-high { color: var(--text-priority-high); }
+        .themed-text-medium { color: var(--text-priority-medium); }
+        .themed-text-low { color: var(--text-priority-low); }
+        .themed-hover-sidebar:hover { background-color: var(--hover-sidebar) !important; }
+        .themed-modal-bg { background-color: var(--modal-bg); }
+        .themed-tab-active { background-color: var(--modal-tab-active-bg); }
+        .themed-tab-text { color: var(--tab-text); }
+        .themed-dropdown-bg { background-color: var(--dropdown-bg); }
+        .themed-dropdown-text { color: var(--dropdown-text); }
+        .themed-dropdown-hover:hover { background-color: var(--dropdown-hover-bg); }
+        .themed-text-primary { color: var(--bg-primary); }
+
+        /* Kustomisasi untuk tampilan task */
+        .task-card {
+            background-color: var(--bg-card);
+            color: var(--text-white);
+        }
+
+        /* Hanya tampilkan saat mencetak */
+        @media print {
+            body > *:not(.print-area) {
+                display: none;
+            }
+            .print-area {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+            .print-area .print-button {
+                display: none;
+            }
+        }
+        
+        /* CSS baru untuk mengendalikan sidebar dan konten utama */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            transition: transform 0.3s ease;
+            transform: translateX(0);
+            z-index: 50; /* Pastikan sidebar di atas konten utama */
+        }
+        #sidebar.sidebar-closed {
+            transform: translateX(-100%);
+        }
+
+        /* Konten utama akan memiliki padding kiri yang disesuaikan */
+        #main-content {
+            padding-left: 300px;
+            transition: padding-left 0.3s ease;
+        }
+        .sidebar-closed + #main-content {
+            padding-left: 0;
+        }
+
+        @media (max-width: 768px) {
+            #main-content {
+                padding-left: 0;
+            }
+        }

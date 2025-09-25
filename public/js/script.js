@@ -31,13 +31,24 @@ createButton.addEventListener("click", function (event) {
 // Menambahkan event listener untuk tombol "Batal" di dalam form
 cancelButton.addEventListener("click", function (event) {
   // Mencegah form untuk melakukan submit dan memuat ulang halaman
-  event.preventDefault();
 
   // Menyembunyikan form 'Create'
   crtform.classList.add("hidden");
   // Menampilkan kembali tombol 'Add task'
   addbuttonContainer.classList.remove("hidden");
 });
+
+
+// Mendapatkan referensi ke elemen-elemen DOM
+const morebtn = document.getElementById("more-btn");
+const moremenu = document.getElementById("more-menu");
+
+addbutton.addEventListener("click", function (event) {
+  event.preventDefault();
+  addbuttonContainer.classList.add("hidden");
+  crtform.classList.remove("hidden");
+});
+
 
 /*// DarkMode
 const darkToggle = document.querySelector('#dark-toggle');
@@ -56,3 +67,5 @@ darkToggle.addEventListener('click', function () {
     drf.classList.add('hidden');
   }
 });*/
+
+   
