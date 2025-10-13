@@ -14,3 +14,5 @@ cara menyalin dan configurasi repo ini :
    - lalu klik import
 4. buka xampp dan nyalakan apache dan mysql
 5. buka web browser lalu jalankan url ini : localhost/To-Do-List
+
+pada tanggal 13 oktober kami memutuskan untuk mengulang projek ini karna ada code logiv yang error yang pening untuk di fix jadi di ulang wkwk
