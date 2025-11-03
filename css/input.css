@@ -1,8 +1,29 @@
-@import "tailwindcss";
 
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/*@import url(../font/BBHSansBartle-Regular.ttf);
+@import url(../font/Gabarito-VariableFont_wght.ttf);
+@import url(../font/Lexend-VariableFont_wght.ttf);
+@import url(../font/Montserrat-VariableFont_wght.ttf);
+@import url(../font/PoiretOne-Regular.ttf);
+@import url(../font/Quicksand-VariableFont_wght.ttf);
+@import url(../font/Zain-Regular.ttf);*/
+
+
+@import url('https://fonts.googleapis.com/css2?family=BBH+Sans+Bartle&family=BBH+Sans+Hegarty&family=Gabarito:wght@400..900&family=Lexend:wght@100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poiret+One&family=Quicksand:wght@300..700&family=Zain:ital,wght@0,200;0,300;0,400;0,700;0,800;0,900;1,300;1,400&display=swap');
+@import "tailwindcss";
+@theme {
+  --font-BBH: "BBHSansBartle";
+  --font-Gabarito: "Gabarito";
+  --font-Mons: "Montserrat";
+  --font-Lexend: "Lexend";
+  --font-PoiretOne: "PoiretOne";
+  --font-Quicksand: "Quicksand";
+  --font-Zain: "Zain";
+}
+
+
         body {
-            font-family: 'Inter', sans-serif;
+          
             /* Latar belakang dinamis seperti di gambar */
             background-image: url(../img/lone-tree-lake-dry-fields-clear-sky-reflections-landscape-3840x2160-740.jpg);
             background-size: cover;
@@ -21,3 +42,4 @@
         .custom-scroll {
             scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
         }
+
