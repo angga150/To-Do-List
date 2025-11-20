@@ -10,8 +10,8 @@ function tasks($query) {
         // ambil semua tag untuk task ini
         $tagQuery = "SELECT tags.tag_name 
                      FROM tags 
-                     JOIN todotag ON tags.id_tag = todotag.tag_id 
-                     WHERE todotag.task_id = {$row['task_id']}";
+                     JOIN task_tags ON tags.id = task_tags.tag_id 
+                     WHERE task_tags.task_id = {$row['id']}";
         $tagResult = mysqli_query($conn, $tagQuery);
 
         $tags = [];
@@ -28,6 +28,7 @@ function tasks($query) {
 }
 
 function tambahTugasBaru($data) {
+    session_start();
 	global $conn;
 
 	$title = $data["title"];
@@ -36,6 +37,7 @@ function tambahTugasBaru($data) {
 	$priority = $data['priority'];
 	$status = $data['status'];
 	$created = date('Y-m-d H:i:s');
+    $user_id = $_SESSION['user_id'];
 
 	$tags = explode(',', $data['tags']);
 	
@@ -46,7 +48,7 @@ function tambahTugasBaru($data) {
     $deadline = $tanggal . ' ' . $time . ':00'; // hasil: 2025-10-16 14:30:00
 
 	// tambahkan tugas ke databases
-	mysqli_query($conn, "INSERT INTO tasks VALUES('','$title','$desk','$priority','$status','$deadline','$list','$created')");
+	mysqli_query($conn, "INSERT INTO tasks VALUES('','$title','$desk','$priority','$status','$list','$created','$deadline')");
 	$tasks_id = mysqli_insert_id($conn);
 
     // Cek dan simpan setiap tag
@@ -55,20 +57,23 @@ function tambahTugasBaru($data) {
         if ($tag == '') continue;
 
         // cek apakah tag sudah ada 
-        $check = mysqli_query($conn, "SELECT id_tag FROM tags WHERE tag_name='$tag'");
+        $check = mysqli_query($conn, "SELECT id FROM tags WHERE tag_name='$tag' AND user_id='$user_id'");
         if (mysqli_num_rows($check) > 0) {
             $row = mysqli_fetch_assoc($check);
-            $tag_id = $row['id_tag'];
+            $tag_id = $row['id'];
         } else {
-            mysqli_query($conn, "INSERT INTO tags VALUES ('', '$tag')");
+            mysqli_query($conn, "INSERT INTO tags (tag_name, user_id) VALUES ('$tag', '$user_id')");
             $tag_id = mysqli_insert_id($conn);
         }
 
         //  Buat relasi
-        mysqli_query($conn, "INSERT INTO todotag VALUES ('',$tasks_id, $tag_id)");
+        mysqli_query($conn, "INSERT INTO task_tags (task_id, tag_id) VALUES ($tasks_id, $tag_id)");
     }
 
-	return mysqli_affected_rows($conn);
+    // tambahkan list ke table lists
+    mysqli_query($conn, "INSERT INTO lists (list_name, user_id) VALUES ('$list', '$user_id')");
+
+    return mysqli_affected_rows($conn);
 }
 
 function tugasSelesai($data) {

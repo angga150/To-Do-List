@@ -1,5 +1,18 @@
 <?php
+session_start();
+// Jika user belum pernah melihat homepage, maka akan diarahkan ke halaman homepage
+if(!isset($_SESSION['first_visit'])) {
+    $_SESSION['first_visit'] = true;
+    header("Location: home.php");
+    exit;
+}
+
 require ("config.php");
+
+if( !isset($_SESSION["username"]) ) {
+    header("Location: login.php");
+    exit;
+}
 
 if( isset($_POST['tambahTugas']) ) {
 
@@ -28,241 +41,390 @@ if( isset($_POST['selesai']) ) {
 
 }
 
-$totalTask = totalTask("SELECT * FROM tasks");
+
+$totalTask = totalTask("SELECT * FROM tasks WHERE status = 'pending'");
+$taskComleted = totalTask("SELECT * FROM tasks WHERE status = 'completed'");
 
 $tasks = tasks("SELECT * FROM tasks");
+$tasksCompleteDetail = tasks("SELECT * FROM tasks WHERE status = 'completed'");
 
 // var_dump($tasks);
+
+// jika tombol logout ditekan maka keluar dan kembali ke halaman login
+if( isset($_POST['logout']) ) {
+    // hapus session untuk login saja seprti username dan user_id
+    unset($_SESSION['username']);
+    header("Location: login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+
+$tags = mysqli_query($conn, "SELECT tag_name FROM tags WHERE user_id='$user_id'");
 ?>
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Today's Focus - To Do List</title>
-    <!-- Load Tailwind CSS -->
+    <title>Dolis Workstation</title>
+    <link rel="icon" href="img/logo/Untitled-1.png">
+
     <link rel="stylesheet" href="css/output.css">
-    <!-- Load Lucide Icons -->
-    <script type="module" src="https://unpkg.com/lucide@latest"></script>
-
-    
 </head>
-<body>
+<!-- npx @tailwindcss/cli -i ./css/input.css -o ./css/output.css --watch -->
+<body class="font-Mons flex justify-between p-4 gap-4 h-screen custom-scroll overflow-y-auto ease-in-out transition-all duration-300">
 
-    <!-- Kontainer Utama Aplikasi -->
-    <div id="app" class="flex p-4 gap-6 justify-between h-screen max-h-screen">
+    <!-- Sidebar -->
+<div class="flex w-[250px] h-[97vh] fixed ">
+    <div class="lg:w-full max-h-screen bg-white/60 backdrop-blur-sm rounded-xl p-4 transition-all ease-in-out duration-300">
 
-        <!-- Panel Kiri (Navigasi) -->
-        <div id="left-panel" class="w-full lg:w-1/7 bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-2xl flex flex-col transition-all duration-300">
-            <!-- Profil Pengguna dan ID -->
-            <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <i data-lucide="user" class="w-5 h-5 text-gray-600"></i>
-                </div>
-                <div>
-                    <p class="font-semibold text-sm">Pengguna</p>
-                    <p id="user-id-display" class="text-xs text-gray-600 truncate w-32 md:w-auto">Memuat ID...</p>
-                </div>
+        <div class="flex justify-items-center items-center gap-2">
+            <div class="w-[40px] h-[40px] rounded-full bg-amber-200 justify-items-center content-center overflow-hidden flex">
+                <img src="img/logo/dolis 2.png" alt="" >
             </div>
-
-            <!-- Kolom Pencarian -->
-            <div class="mb-8">
-                <div class="relative">
-                    <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
-                    <input type="text" placeholder="Cari Tugas..." class="w-full pl-10 pr-4 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner">
-                </div>
-            </div>
-
-            <!-- Bagian TASKS (Tugas) -->
-            <div class="mb-8">
-                <h3 class="uppercase text-xs font-bold text-gray-500 mb-3 tracking-wider">Tugas</h3>
-                <ul id="task-filters" class="space-y-2 text-sm">
-                    <li class="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-white/90 transition-colors bg-blue-100 font-medium text-blue-700">
-                        <span><i data-lucide="sun" class="w-4 h-4 inline-block mr-2"></i> Hari Ini</span>
-                        <span id="counter-today" class="text-xs font-bold bg-blue-200 text-blue-700 px-2 py-0.5 rounded-full"><?= $totalTask; ?></span>
-                    </li>
-                    <li class="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-white/90 transition-colors">
-                        <span><i data-lucide="calendar" class="w-4 h-4 inline-block mr-2"></i> Mendatang</span>
-                        <span id="counter-upcoming" class="text-xs font-bold bg-gray-200 px-2 py-0.5 rounded-full"><?= $totalTask; ?></span>
-                    </li>
-                    <li class="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-white/90 transition-colors">
-                        <span><i data-lucide="check-circle" class="w-4 h-4 inline-block mr-2"></i> Selesai</span>
-                        <span id="counter-completed" class="text-xs font-bold bg-gray-200 px-2 py-0.5 rounded-full"><?= $totalTask; ?></span>
-                    </li>
-                    <li class="p-2 cursor-pointer text-blue-500 hover:text-blue-700 transition-colors font-medium">
-                        <i data-lucide="plus" class="w-4 h-4 inline-block mr-2"></i> Tambah Tugas Baru
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Bagian LISTS (Daftar) -->
-            <div class="mb-8">
-                <h3 class="uppercase text-xs font-bold text-gray-500 mb-3 tracking-wider">Daftar</h3>
-                <ul id="list-filters" class="space-y-2 text-sm">
-                    <li class="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-white/90 transition-colors">
-                        <span><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-2"></span> Pribadi</span>
-                        <span class="text-xs font-bold bg-gray-200 px-2 py-0.5 rounded-full">0</span>
-                    </li>
-                    <li class="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-white/90 transition-colors">
-                        <span><span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span> Tim A</span>
-                        <span class="text-xs font-bold bg-gray-200 px-2 py-0.5 rounded-full">0</span>
-                    </li>
-                    <li class="flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-white/90 transition-colors">
-                        <span><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span> Tim B</span>
-                        <span class="text-xs font-bold bg-gray-200 px-2 py-0.5 rounded-full">0</span>
-                    </li>
-                    <li class="p-2 cursor-pointer text-blue-500 hover:text-blue-700 transition-colors font-medium">
-                        <i data-lucide="plus" class="w-4 h-4 inline-block mr-2"></i> Tambah Daftar Baru
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Bagian TAGS (Tag) -->
-            <div class="mb-auto">
-                <h3 class="uppercase text-xs font-bold text-gray-500 mb-3 tracking-wider">Tag</h3>
-                <div id="tag-filters" class="flex flex-wrap gap-2 text-xs">
-                    <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-300">#Proyek</span>
-                    <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-300">#Mendesak</span>
-                    <span class="text-blue-500 cursor-pointer hover:text-blue-700 font-medium"><i data-lucide="plus" class="w-3 h-3 inline-block mr-1"></i> Tambah Tag</span>
-                </div>
-            </div>
-
-            <!-- Menu Pengaturan Bawah -->
-            <div class="mt-6 border-t pt-4 text-sm text-gray-600">
-                <button class="flex items-center space-x-2 hover:text-gray-900 transition-colors">
-                    <i data-lucide="settings" class="w-4 h-4"></i>
-                    <span>Menu Pengaturan</span>
-                </button>
-            </div>
+            <form action="" method="post">
+            <h1 class="overflow-hidden max-w-[200px] text-sm font-semibold"><?= $_SESSION['username']; ?></h1>
+            <button name="logout">logout</button>
+            </form>
         </div>
 
-        <!-- Panel Tengah (Daftar Tugas Hari Ini) -->
-        <div id="center-panel" class="w-full lg:w-2/5 flex flex-col transition-all duration-300">
-            <header class="mb-6 flex items-baseline justify-between">
-                <h1 class="text-6xl font-extrabold drop-shadow-lg">Hari Ini</h1>
-                <span id="task-count-total" class="text-6xl font-extrabold  drop-shadow-lg ml-4"><?= $totalTask; ?></span>
-            </header>
-
-            <!-- Kontainer Tugas -->
-            <?php foreach( $tasks as $task ) : ?>
-            <div id="tasks-container" class="flex-grow custom-scroll overflow-y-auto pr-2 space-y-4">
-                <div class="glass-panel p-4 bg-white/60 backdrop-blur-md rounded-xl shadow-lg hover:shadow-xl transition duration-200">
-                        <!-- Top Content: Title and Description -->
-                        <div class="mb-3">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-1"><?= $task['title']; ?></h2>
-                            <p class="text-sm text-gray-600"><?= $task['description']; ?></p>
-                        </div>
-                        
-                        <!-- Bottom Bar: Dates/Tags and Mark Done Button -->
-                        <div class="flex justify-between items-end border-t border-gray-100 pt-3 mt-3">
-                            <!-- Dates and Tags Container (Left) -->
-                            <div class="flex flex-wrap items-center text-xs text-gray-500 space-x-4">
-                                                                <span class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span class="text-gray-700"><?= $task['deadline']; ?></span>
-                                </span>
-                                <span class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 9.586V6z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span class="text-gray-700"><?= $task['created']; ?></span>
-                                </span>
-                                <span class="${listColorClasses} text-xs font-medium px-2 py-0.5 rounded-full"><?= $task['list']; ?></span>
-                                    <?php foreach ($task['tags'] as $tag): ?>
-                                        <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded-full">#<?= $tag; ?></span>
-                                    <?php endforeach; ?>
-                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded-full"><?= $task['priority']; ?></span>
-                            </div>
-
-                            <!-- Mark Done Button (Right) -->
-                            <form action="" method="post">
-                                <input type="hidden" name="taskId" value="<?= $task['task_id']; ?>">
-                                <input type="hidden" name="completed" value="Completed">
-                            <button type="submit" name="selesai" class="check-button text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-150 border border-blue-300 px-3 py-1 rounded-full bg-blue-50 flex items-center shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                Selesai
-                            </button>
-                            </form>
-                        </div>
-                    </div>
-                <!-- Tugas akan dimuat di sini oleh JavaScript -->
+        <div class="searchbar">
+            <div class="border-black/70 border-1 rounded-md py-1 px-2 flex my-6 gap-2 content-center items-center w-full">
+       
+                <svg  xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#000000" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/></svg>
+                
+                    <input class="text-gray-800 w-[170px] text-sm focus:outline-none font-semibold" type="text" name="search" id="search" placeholder="search">
+                
                 
             </div>
-            <?php endforeach; ?>
         </div>
 
-        <!-- Panel Kanan (Formulir Buat Tugas) -->
-        <div id="right-panel" class="w-full lg:w-1/5 bg-white/60 backdrop-blur-md rounded-2xl p-6 shadow-2xl flex flex-col transition-all duration-300">
-            <h2 class="text-2xl font-bold mb-6">Buat Tugas Baru</h2>
+        <div class="flex flex-col">
+            <div class="">
+                <div class="task mt-3">
+                    <h1 class="font-bold text-md">Tasks</h1>
+                    <div id="today-btn" class="flex gap-2 p-2 my-2 content-center items-center bg-white/60 hover:bg-white/80 cursor-pointer rounded-lg transition duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><path fill="none" stroke="#000000" stroke-linecap="round" stroke-width="2" d="M12 8h15m-15 8h9m-9 8h15M7 24a1 1 0 1 1-2 0a1 1 0 0 1 2 0Zm0-8a1 1 0 1 1-2 0a1 1 0 0 1 2 0Zm0-8a1 1 0 1 1-2 0a1 1 0 0 1 2 0Z"/></svg>
 
-            <form id="create-task-form" class="space-y-4 flex-grow custom-scroll pr-2 overflow-y-auto" method="post">
-                <!-- status pending hidden input -->
+                            <p class="text-sm">Today</p>
+                            <div class="flex text-sm right-5 fixed rounded-md px-2 items-center content-center">
+                                <p><?= $totalTask; ?></p>
+                            </div>
+   
+                    </div>
+
+
+                    <div id="comp-btn" class="gap-2 p-2 my- flex content-center items-center hover:bg-white/80 cursor-pointer rounded-lg transition duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#000000"><g fill="#000000" fill-rule="evenodd" clip-rule="evenodd"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12"/><path d="m17.608 9l-7.726 7.726L6 12.093l1.511-1.31l2.476 3.01l6.207-6.207z"/></g></svg>
+                        <p class="text-sm">Completed</p>
+                            <div class="flex text-sm right-5 fixed rounded-md px-2 items-center content-center">
+                                <p><?= $taskComleted; ?></p>
+                            </div>
+                    </div>
+
+                    
+                    <div id="crttask" class="gap-2 p-2 my-2 flex content-center items-center hover:bg-white/80 cursor-pointer rounded-lg transition duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2Z"/>
+                        </svg>
+                        <p class="font-semibold text-sm">Add new task</p>
+                    </div>
+                </div>
+            
+
+                <div class="Lists mt-6">
+                    <h1 class="font-bold text-md">Lists</h1>
+                        <div class="flex p-2 my-2 text-sm rounded-lg transition duration-300 ease-in-out">
+                            <p>Pribadi</p>
+                            <div class="flex text-sm right-5 fixed rounded-md px-2 items-center content-center">
+                                <p>0<!-- angka ini menunjukan berapa banyak task yang menggunakan ini --></p>
+                            </div>
+                        </div>
+                        <div id="crtlist" class="gap-2 p-2 my-2 flex content-center items-center hover:bg-white/80 cursor-pointer rounded-lg transition duration-300 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2Z"/>
+                            </svg>
+                            <p class="font-semibold text-sm">Add new list</p>
+                        </div>
+
+                </div>
+
+                <div class="Lists mt-6">
+                    <h1 class="font-bold text-md flex mb-2">Tags</h1>
+                    <div class="gap-2 flex flex-wrap w-full">
+                        <div class="flex py-1 px-2  w-fit text-sm font-semibold bg-gray-400 rounded-lg">
+                            <p>Creative</p>
+                        </div>
+                        <div class="flex py-1 px-2  w-fit text-sm font-semibold bg-gray-400 rounded-lg">
+                            <p>Free Time</p>
+                        </div>
+                    </div>
+                        <div id="crttag" class="gap-2 p-2 my-2 flex content-center items-center hover:bg-white/80 cursor-pointer rounded-lg transition duration-300 ease-in-out">
+                            <svg class="font-bold" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2Z"/>
+                        </svg>
+                            <p id="" class="font-semibold text-sm">New tag</p>
+                        </div>
+                </div>
+            </div>
+
+            <div id="sett-btn" class="px-2 py-2 w-[220px] font-bold flex fixed content-center items-center gap-2 bottom-4.5 hover:bg-white/80 cursor-pointer rounded-lg focus:bg-white/80  transition duration-300 ease-in-out">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#000000" d="M19.9 12.66a1 1 0 0 1 0-1.32l1.28-1.44a1 1 0 0 0 .12-1.17l-2-3.46a1 1 0 0 0-1.07-.48l-1.88.38a1 1 0 0 1-1.15-.66l-.61-1.83a1 1 0 0 0-.95-.68h-4a1 1 0 0 0-1 .68l-.56 1.83a1 1 0 0 1-1.15.66L5 4.79a1 1 0 0 0-1 .48L2 8.73a1 1 0 0 0 .1 1.17l1.27 1.44a1 1 0 0 1 0 1.32L2.1 14.1a1 1 0 0 0-.1 1.17l2 3.46a1 1 0 0 0 1.07.48l1.88-.38a1 1 0 0 1 1.15.66l.61 1.83a1 1 0 0 0 1 .68h4a1 1 0 0 0 .95-.68l.61-1.83a1 1 0 0 1 1.15-.66l1.88.38a1 1 0 0 0 1.07-.48l2-3.46a1 1 0 0 0-.12-1.17ZM18.41 14l.8.9l-1.28 2.22l-1.18-.24a3 3 0 0 0-3.45 2L12.92 20h-2.56L10 18.86a3 3 0 0 0-3.45-2l-1.18.24l-1.3-2.21l.8-.9a3 3 0 0 0 0-4l-.8-.9l1.28-2.2l1.18.24a3 3 0 0 0 3.45-2L10.36 4h2.56l.38 1.14a3 3 0 0 0 3.45 2l1.18-.24l1.28 2.22l-.8.9a3 3 0 0 0 0 3.98Zm-6.77-6a4 4 0 1 0 4 4a4 4 0 0 0-4-4Zm0 6a2 2 0 1 1 2-2a2 2 0 0 1-2 2Z"/></svg>
+                <p class="text-sm">Setting Menu</p>
+            </div>
+        </div>    
+    </div>
+</div>
+    <!-- Sidebar Close-->
+
+    <!-- Main Content -->
+<div id="today-task" class="w-full flex justify-center ml-60">
+    <div class="lg:w-[800px] max-h-screen  p-4 transition-all ease-in-out duration-300">
+        <div id="main-header" class="flex justify-between ">
+            <h1 class="font-bold text-4xl">Today</h1>
+        </div>
+
+        <?php foreach( $tasks as $task ) : ?>
+        <div class="my-4 h-[89vh] custom-scroll overflow-y-auto transition-all ease-in-out">
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl py-2 px-3 my-3">
+                <div class="mb-3">
+                    <p class="font-medium text-lg w-full"><?= $task['title']; ?></p>
+                    <p class="text-sm w-full"><?= $task['description']; ?></p>
+                </div>
+
+                    <div class="flex justify-between py-1">
+                        <div class="flex gap-2 items-center text-xs">
+                            <div class="flex gap-1 items-center px-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="#000000" d="M9.5 14h-8C.67 14 0 13.33 0 12.5V2.38C0 1.55.67.88 1.5.88h11c.83 0 1.5.67 1.5 1.5v7.25c0 .28-.22.5-.5.5s-.5-.22-.5-.5V2.38c0-.28-.22-.5-.5-.5h-11c-.28 0-.5.22-.5.5V12.5c0 .28.22.5.5.5h8c.28 0 .5.22.5.5s-.22.5-.5.5Z"/><path fill="#000000" d="M4 3.62c-.28 0-.5-.22-.5-.5V.5c0-.28.22-.5.5-.5s.5.22.5.5v2.62c0 .28-.22.5-.5.5Zm6.12 0c-.28 0-.5-.22-.5-.5V.5c0-.28.22-.5.5-.5s.5.22.5.5v2.62c0 .28-.22.5-.5.5ZM13.5 6H.5C.22 6 0 5.78 0 5.5S.22 5 .5 5h13c.28 0 .5.22.5.5s-.22.5-.5.5Zm-1 10C10.57 16 9 14.43 9 12.5S10.57 9 12.5 9s3.5 1.57 3.5 3.5s-1.57 3.5-3.5 3.5Zm0-6a2.5 2.5 0 0 0 0 5a2.5 2.5 0 0 0 0-5Z"/><path fill="#000000" d="M13.5 14a.47.47 0 0 1-.35-.15l-1-1a.51.51 0 0 1-.15-.35V11c0-.28.22-.5.5-.5s.5.22.5.5v1.29l.85.85c.2.2.2.51 0 .71c-.1.1-.23.15-.35.15Z"/></svg>
+                                <p class="font-medium "><?= $task['deadline']; ?></p>
+                            </div>
+                            <div class="flex gap-1 items-center px-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="#000000"><path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1Zm0 7a1 1 0 0 1 1-1h16a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1Zm1 6a1 1 0 0 0 0 2h16a1 1 0 0 0 0-2H4Z"/></svg>
+                                <p class="font-medium "><?= $task['list']; ?></p> 
+                            </div>
+                            <div class="flex gap-1 items-center rounded-full px-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><path fill="#000000" d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 15h-2v-6h2Zm0-8h-2V7h2Z"/></svg>
+                                <p class="font-medium "><?= $task['created']; ?></p>
+                            </div>
+                            <?php foreach ($task['tags'] as $tag): ?>
+                            <div class="flex gap-1 items-center rounded-md px-1 py-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><path fill="#000000" d="m6 20l1-4H3.5l.5-2h3.5l1-4h-4L5 8h4l1-4h2l-1 4h4l1-4h2l-1 4h3.5l-.5 2h-3.5l-1 4h4l-.5 2h-4l-1 4h-2l1-4H9l-1 4H6Zm3.5-6h4l1-4h-4l-1 4Z"/></svg>
+                                <p class="font-medium "><?= $tag; ?></p>
+                            </div>
+                            <?php endforeach; ?>
+                            <div class="flex gap-1 items-center bg-red-500 rounded-md px-2 py-0.5">
+                                <p class="font-medium text-white"><?= $task['priority']; ?></p>
+                            </div>
+
+                        </div>
+
+                        <div class="flex bg-blue-400 hover:bg-blue-600 rounded-lg px-4 py-1 justify-center items-center ease-in-out transition-all duration-200">
+                            
+                            <input class="font-medium text-white text-sm" type="button" value="Mark as done">
+                        </div>
+
+                    </div>
+
+            </div>
+        </div>
+        <?php endforeach; ?>
+
+    </div>
+</div>
+
+<div id="complete-task" class="w-full flex justify-center ml-60 hidden">
+    <div class="lg:w-[800px] max-h-screen  p-4 transition-all ease-in-out duration-300">
+        <div id="main-header" class="flex justify-between ">
+            <h1 class="font-bold text-4xl">Completed</h1>
+        </div>
+
+        
+        <div class="my-4 h-[89vh] custom-scroll overflow-y-auto transition-all ease-in-out">
+            <div class="bg-white/60 backdrop-blur-sm rounded-xl py-2 px-3 my-3">
+                <div class="mb-3">
+                    <p class="font-medium text-lg w-full"></p>
+                    <p class="text-sm w-full">a</p>
+                </div>
+
+                    <div class="flex justify-between py-1">
+                        <div class="flex gap-2 items-center text-xs">
+                            <div id="" class="flex gap-1 items-center px-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="#000000" d="M9.5 14h-8C.67 14 0 13.33 0 12.5V2.38C0 1.55.67.88 1.5.88h11c.83 0 1.5.67 1.5 1.5v7.25c0 .28-.22.5-.5.5s-.5-.22-.5-.5V2.38c0-.28-.22-.5-.5-.5h-11c-.28 0-.5.22-.5.5V12.5c0 .28.22.5.5.5h8c.28 0 .5.22.5.5s-.22.5-.5.5Z"/><path fill="#000000" d="M4 3.62c-.28 0-.5-.22-.5-.5V.5c0-.28.22-.5.5-.5s.5.22.5.5v2.62c0 .28-.22.5-.5.5Zm6.12 0c-.28 0-.5-.22-.5-.5V.5c0-.28.22-.5.5-.5s.5.22.5.5v2.62c0 .28-.22.5-.5.5ZM13.5 6H.5C.22 6 0 5.78 0 5.5S.22 5 .5 5h13c.28 0 .5.22.5.5s-.22.5-.5.5Zm-1 10C10.57 16 9 14.43 9 12.5S10.57 9 12.5 9s3.5 1.57 3.5 3.5s-1.57 3.5-3.5 3.5Zm0-6a2.5 2.5 0 0 0 0 5a2.5 2.5 0 0 0 0-5Z"/><path fill="#000000" d="M13.5 14a.47.47 0 0 1-.35-.15l-1-1a.51.51 0 0 1-.15-.35V11c0-.28.22-.5.5-.5s.5.22.5.5v1.29l.85.85c.2.2.2.51 0 .71c-.1.1-.23.15-.35.15Z"/></svg>
+                                <p class="font-medium ">2025-26-07</p>
+                            </div>
+                            <div id="" class="flex gap-1 items-center px-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="#000000"><g fill="none" fill-rule="evenodd"><path d="m12.594 23.258l-.012.002l-.071.035l-.02.004l-.014-.004l-.071-.036q-.016-.004-.024.006l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.016-.018m.264-.113l-.014.002l-.184.093l-.01.01l-.003.011l.018.43l.005.012l.008.008l.201.092q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.003-.011l.018-.43l-.003-.012l-.01-.01z"/><path fill="#000000" d="M10.975 3.002a1 1 0 0 1-.754 1.196a8 8 0 0 0-.583.156a1 1 0 0 1-.59-1.911q.36-.112.73-.195a1 1 0 0 1 1.197.754m2.05 0a1 1 0 0 1 1.196-.754c4.454 1.01 7.78 4.992 7.78 9.752c0 5.523-4.478 10-10 10c-4.761 0-8.743-3.325-9.753-7.779a1 1 0 0 1 1.95-.442a8 8 0 1 0 9.58-9.58a1 1 0 0 1-.753-1.197M6.614 4.72a1 1 0 0 1-.053 1.414q-.222.205-.427.426A1 1 0 0 1 4.668 5.2q.255-.276.532-.533a1 1 0 0 1 1.414.053M12 6a1 1 0 0 1 1 1v4.586l2.707 2.707a1 1 0 0 1-1.414 1.414l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1M3.693 8.388a1 1 0 0 1 .661 1.25a8 8 0 0 0-.156.583a1 1 0 0 1-1.95-.442q.084-.37.195-.73a1 1 0 0 1 1.25-.661"/></g></svg>
+                                <p class="font-medium ">01:30 PM</p> 
+                            </div>
+                            <div id="" class="flex gap-1 items-center rounded-full px-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 48 48"><path fill="#000000" d="M24 7.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7ZM18 11a6 6 0 1 1 12 0a6 6 0 0 1-12 0Zm19-1.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5ZM32 12a5 5 0 1 1 10 0a5 5 0 0 1-10 0ZM8.5 12a2.5 2.5 0 1 1 5 0a2.5 2.5 0 0 1-5 0ZM11 7a5 5 0 1 0 0 10a5 5 0 0 0 0-10Zm4 16.25A4.25 4.25 0 0 1 19.25 19h9.5A4.25 4.25 0 0 1 33 23.25V34a9 9 0 1 1-18 0V23.25Zm9 17.25a6.5 6.5 0 0 0 6.5-6.5V23.25a1.75 1.75 0 0 0-1.75-1.75h-9.5a1.75 1.75 0 0 0-1.75 1.75V34a6.5 6.5 0 0 0 6.5 6.5Zm-13-3a4.48 4.48 0 0 0 2.367-.672c.219.826.532 1.613.926 2.35A7 7 0 0 1 4 33v-9.749A4.25 4.25 0 0 1 8.25 19h5.5c.288 0 .57.029.841.083a6.24 6.24 0 0 0-1.343 2.417H8.25a1.75 1.75 0 0 0-1.75 1.75V33a4.5 4.5 0 0 0 4.5 4.5ZM37 40a6.969 6.969 0 0 1-3.293-.821c.394-.738.707-1.525.926-2.351A4.5 4.5 0 0 0 41.5 33v-9.75a1.75 1.75 0 0 0-1.75-1.75h-4.998a6.24 6.24 0 0 0-1.344-2.417c.273-.054.554-.083.842-.083h5.5A4.25 4.25 0 0 1 44 23.25V33a7 7 0 0 1-7 7Z"/></svg>
+                                <p class="font-medium ">Pribadi</p>
+                            </div>
+                            <div id="" class="flex gap-1 items-center rounded-md px-1 py-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><path fill="#000000" d="m6 20l1-4H3.5l.5-2h3.5l1-4h-4L5 8h4l1-4h2l-1 4h4l1-4h2l-1 4h3.5l-.5 2h-3.5l-1 4h4l-.5 2h-4l-1 4h-2l1-4H9l-1 4H6Zm3.5-6h4l1-4h-4l-1 4Z"/></svg>
+                                <p class="font-medium ">Ide</p>
+                            </div>
+                            <div id="" class="flex gap-1 items-center bg-red-500 rounded-md px-2 py-0.5">
+                                <p class="font-medium text-white">Highest</p>
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+    <!-- Main Content Close-->
+
+    <!-- Right Tab -->
+    <div id="tasktab" class="sidebar w-full lg:w-1/4 max-h-screen bg-white/60 backdrop-blur-sm rounded-xl p-4 transition-all ease-in-out duration-300 hidden overflow-y-auto">
+        <div class="create-task">
+            <form action="" method="post">
                 <input type="hidden" name="status" value="Pending">
-                <input type="hidden" name="created">
+                <?php $_SESSION['user_id']; ?>
+            <h1 class="font-bold text-2xl mb-8">Create task</h1>
                 <!-- Judul -->
-                <div>
-                    <label for="task-title" class="text-sm font-medium block mb-1">Judul</label>
-                    <input type="text" id="task-title" name="title" required class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
-                </div>
+                <div class="">
+                    <div>
+                        <label for="task-title" class="text-sm font-medium block mb-1">Title</label>
+                        <input type="text" id="task-title" name="title" placeholder="hmmmm?" required class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
+                    </div>
 
-                <!-- Deskripsi -->
-                <div>
-                    <label for="task-description" class="text-sm font-medium block mb-1">Deskripsi</label>
-                    <textarea id="task-description" name="description" rows="3" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner"></textarea>
+                    <!-- Deskripsi -->
+                    <div class="mt-4">
+                        <label for="task-description" class="text-sm font-medium block mb-1">Description</label>
+                        <textarea id="task-description" name="description" placeholder="What do you think???" rows="3" class="w-full p-2 h-32 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner"></textarea>
+                    </div>
                 </div>
-
                 <!-- Tenggat Waktu -->
-                <div>
-                    <label for="task-deadline" class="text-sm font-medium block mb-1">Tenggat Waktu</label>
-                    <input type="date" id="task-deadline" name="deadline" value="" required class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
+                <div class="mt-4">
+                    <h1 class="text-xl font-semibold">Deadline</h1>
+                    <div class="mt-2">
+                        <label for="task-deadline" class="text-sm font-medium block mb-1">Date</label>
+                        <input type="date" id="task-deadline" name="deadline" value="2023-07-20" required class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
+                    </div>
+
+                    <!-- Waktu -->
+                    <div class="mt-2">
+                        <label for="task-time" class="text-sm font-medium block mb-1">Time</label>
+                        <input type="time" id="task-time" name="time" value="13:30" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
+                    </div>
                 </div>
 
-                <!-- Waktu -->
-                <div>
-                    <label for="task-time" class="text-sm font-medium block mb-1">Waktu</label>
-                    <input type="time" id="task-time" name="time" value="13:30" required class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
-                </div>
+                <div class="mt-4">
+                    <h1 class="text-xl font-semibold">Optional</h1>
+                    <!-- Tags -->
+                    <div class="mt-2">
+                        <label for="task-tags" class="text-sm font-medium block mb-1">Tags</label>
+                        <input type="text" id="task-tags" name="tags" placeholder="e.g., Tag1, Tag2" list="tagslist" autocomplete="off" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
+                        <datalist id="tagslist">
+                            <?php while ($row = mysqli_fetch_assoc($tags)) : ?>
+                                <option value="<?= $row['tag_name']; ?>">
+                            <?php endwhile; ?>
+                        </datalist>
+                    </div>
 
-                <!-- Tags -->
-                <div>
-                    <label for="task-tags" class="text-sm font-medium block mb-1">Tags (Pisahkan dengan koma)</label>
-                    <input type="text" id="task-tags" name="tags" placeholder="e.g., Tag1, Tag2" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner">
-                </div>
+                    <!-- Daftar (List) -->
+                    <div class="mt-2">
+                        <label for="task-list" class="text-sm font-medium block mb-1">List</label>
+                        <select id="task-list" name="list" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner appearance-none pr-8">
+                            <option value="" selected class="hidden"></option>                            
+                            <option value="Pribadi">Pribadi</option>
 
-                <!-- Daftar (List) -->
-                <div>
-                    <label for="task-list" class="text-sm font-medium block mb-1">Daftar</label>
-                    <select id="task-list" name="list" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner appearance-none pr-8">
-                        <option value="Pribadi">Pribadi</option>
-                        <option value="Tim A">Tim A</option>
-                        <option value="Tim B">Tim B</option>
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <!-- Prioritas (Priority) -->
-                <div>
-                    <label for="task-priority" class="text-sm font-medium block mb-1">Prioritas</label>
-                    <select id="task-priority" name="priority" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner appearance-none pr-8">
-                        <option value="Tertinggi">Tertinggi</option>
-                        <option value="Tinggi">Tinggi</option>
-                        <option value="Sedang" selected>Sedang</option>
-                        <option value="Rendah">Rendah</option>
-                    </select>
-                </div>
-                <!-- Tombol Aksi Form (Full Width, Bersebelahan) -->
-                <div class="mt-6 pt-4 border-t flex space-x-3">
-                    <button type="button" id="cancel-form-btn" class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors font-medium">Batal</button>
-                    <button type="submit" form="create-task-form" class="flex-1 px-4 py-2 text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors font-medium shadow-lg shadow-blue-500/50" name="tambahTugas">Buat Tugas</button>
-                </div>
+                    <!-- Prioritas (Priority) -->
+                    <div class="mt-2">
+                        <label for="task-priority" class="text-sm font-medium block mb-1">Priority</label>
+                        <select id="task-priority" name="priority" class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner appearance-none pr-8">
+                            <option value="" selected class="hidden"></option>
+                            <option value="Highest">Highest</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                        
+                    </div>
+                
+            </div>
+
+            <!-- Tombol Aksi Form -->
+            <div class="mt-6 flex space-x-3">
+                <button id="cancelbtntk" type="button" class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors font-medium">Cancel</button>
+                <button type="submit" name="tambahTugas" form="create-task-form" class="flex-1 px-4 py-2 text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors font-medium shadow-lg shadow-blue-500/50">Create</button>
+                <button type="submit" name="tambahTugas">Create</button>
+            </div>   
             </form>
         </div>
 
     </div>
 
+    <div id="listtab" class="sidebar w-full lg:w-1/4 max-h-screen bg-white/60 backdrop-blur-sm rounded-xl p-4 transition-all ease-in-out duration-300 hidden">
+        <div class="create-list">
+            <h1 class="font-bold text-2xl mb-8">Create list</h1>
+            <h2 class="font-medium">List Name</h2>
+            <div class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner appearance-none pr-8">
+                <input class="text-xl w-full font-medium focus:outline-none" type="text" name="List" id="list" placeholder="Create your new list!">
+            </div>
+        </div>
+
+            <div class="mt-6 flex space-x-3">
+                <button id="cancelbtnls" type="button" class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-300 transition-colors font-medium">Cancel</button>
+                <button type="submit" form="create-task-form" class="flex-1 px-4 py-2 text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors font-medium shadow-lg shadow-blue-500/50">Create</button>
+            </div>   
+    </div>
+
+    <div id="tagtab" class="sidebar w-full lg:w-1/4 max-h-screen bg-white/60 backdrop-blur-sm rounded-xl p-4 transition-all ease-in-out duration-300  hidden">
+        <div class="create-tag">
+            <h1 class="font-bold text-2xl mb-8">Create Tag</h1>
+            <h2 class="font-medium">Tag Name</h2>
+            <div class="w-full p-2 bg-white rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-inner appearance-none pr-8">
+                <input class="text-xl w-full font-medium focus:outline-none" type="text" name="tag" id="tag" placeholder="Create your new tag!">
+            </div>
+        </div>
+
+            <div class="mt-6 flex space-x-3">
+                <button id="cancelbtntg" type="button"  class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-300 transition-colors font-medium">Cancel</button>
+                <button type="submit" form="create-task-form" class="flex-1 px-4 py-2 text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors font-medium shadow-lg shadow-blue-500/50">Create</button>
+            </div>   
+    </div>
+    <!-- Right Tab Close-->
+
+    <!-- setting tab -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-5 backdrop-blur-[1px] hidden"></div>
+    <div id="settings-modal" class="fixed left-0 top-0 w-full h-full content-center z-11 items-center justify-items-center hidden">
+        <div class="w-[700px] h-fit bg-white rounded-xl shadow-md p-4">
+
+            <!-- Header Modal -->
+            <div class="flex justify-between items-center pb-3">
+                <p class="text-2xl font-bold themed-tab-text">Settings</p>
+                <div id="close-modal-btn" class="cursor-pointer z-50" >
+                    <svg class="fill-current themed-tab-text" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+                        <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- General Seting -->
+            <div class="justify-items-center">
+                <h1 class="font-bold text-4xl">404</h1>
+                <p class="font-semibold text-2xl">Sorry, this page under constructions</p>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
 </body>
 </html>
